@@ -315,11 +315,27 @@ if not st.session_state.user:
 user    = st.session_state.user
 uid     = user["user_id"]
 is_pro  = bool(user.get("is_pro", 0))
-is_admin= bool(user.get("is_admin", 0))
 display = user.get("display_name", "User")
 email   = user.get("email", "")
 color   = user.get("avatar_color", "#4F46E5")
 initials= "".join(w[0].upper() for w in display.split()[:2]) or "U"
+
+# ── Auto-admin: if logged-in email matches ADMIN_EMAIL in secrets/env,
+#    grant admin instantly — solves Streamlit Cloud fresh-DB problem.
+_admin_email = _get("ADMIN_EMAIL", "").strip().lower()
+is_admin = (
+    bool(user.get("is_admin", 0))
+    or (bool(_admin_email) and email.strip().lower() == _admin_email)
+)
+# Write is_admin=1 to DB so it persists across sessions
+if is_admin and not bool(user.get("is_admin", 0)):
+    try:
+        from database import get_db as _gdb_admin
+        with _gdb_admin() as _c:
+            _c.execute("UPDATE users SET is_admin=1 WHERE user_id=?", (uid,))
+        st.session_state.user["is_admin"] = 1
+    except Exception:
+        pass
 
 # Check subscription expiry on each load
 if is_pro and not check_subscription_expiry(uid):
