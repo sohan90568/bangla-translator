@@ -1,0 +1,23 @@
+# ============================================================
+#  requirements.txt
+#  Install:  pip install -r requirements.txt
+# ============================================================
+
+# Core UI
+streamlit>=1.35.0
+
+# AI engine
+groq>=0.9.0
+
+# Auth
+bcrypt>=4.1.2
+
+# Payments + HTTP
+requests>=2.31.0
+
+# Data + charts
+pandas>=2.0.0
+plotly>=5.20.0
+
+# Environment
+python-dotenv>=1.0.0
