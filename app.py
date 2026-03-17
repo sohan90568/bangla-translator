@@ -11,7 +11,7 @@ from datetime import datetime
 
 from config       import (APP_NAME, APP_VERSION, PLANS, DOMAINS, TONES,
                            FREE_TRANSLATIONS_PER_DAY, FREE_TRANSLATIONS_TOTAL,
-                           PORTPOS_SANDBOX, ADMIN_EMAIL)
+                           PORTPOS_SANDBOX)
 from auth         import (register_user, login_user, validate_session,
                            logout_user, request_password_reset, reset_password_with_otp)
 from translator   import translate_text, detect_language, improve_translation, explain_translation
@@ -320,15 +320,26 @@ email   = user.get("email", "")
 color   = user.get("avatar_color", "#4F46E5")
 initials= "".join(w[0].upper() for w in display.split()[:2]) or "U"
 
-# ── Auto-admin: if logged-in email matches ADMIN_EMAIL in secrets/env,
-#    grant admin instantly — solves Streamlit Cloud fresh-DB problem.
-_admin_email = ADMIN_EMAIL.strip().lower()
-is_admin = (
-    bool(user.get("is_admin", 0))
-    or (bool(_admin_email) and email.strip().lower() == _admin_email)
-)
-# Write is_admin=1 to DB so it persists across sessions
-if is_admin and not bool(user.get("is_admin", 0)):
+# ── Auto-admin: read ADMIN_EMAIL fresh every run from st.secrets or os.environ
+#    This avoids the config.py import-time caching issue on Streamlit Cloud.
+def _get_admin_email() -> str:
+    # Try st.secrets first (Streamlit Cloud)
+    try:
+        v = st.secrets.get("ADMIN_EMAIL", "")
+        if v:
+            return str(v).strip().lower()
+    except Exception:
+        pass
+    # Fall back to os.environ / .env
+    import os
+    return os.getenv("ADMIN_EMAIL", "").strip().lower()
+
+_admin_email = _get_admin_email()
+_db_is_admin = bool(user.get("is_admin", 0))
+is_admin = _db_is_admin or (bool(_admin_email) and email.strip().lower() == _admin_email)
+
+# Write is_admin=1 to DB so it persists permanently
+if is_admin and not _db_is_admin:
     try:
         from database import get_db as _gdb_admin
         with _gdb_admin() as _c:
