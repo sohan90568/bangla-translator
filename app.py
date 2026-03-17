@@ -11,7 +11,7 @@ from datetime import datetime
 
 from config       import (APP_NAME, APP_VERSION, PLANS, DOMAINS, TONES,
                            FREE_TRANSLATIONS_PER_DAY, FREE_TRANSLATIONS_TOTAL,
-                           PORTPOS_SANDBOX)
+                           PORTPOS_SANDBOX, ADMIN_EMAIL)
 from auth         import (register_user, login_user, validate_session,
                            logout_user, request_password_reset, reset_password_with_otp)
 from translator   import translate_text, detect_language, improve_translation, explain_translation
@@ -322,7 +322,7 @@ initials= "".join(w[0].upper() for w in display.split()[:2]) or "U"
 
 # ── Auto-admin: if logged-in email matches ADMIN_EMAIL in secrets/env,
 #    grant admin instantly — solves Streamlit Cloud fresh-DB problem.
-_admin_email = _get("ADMIN_EMAIL", "").strip().lower()
+_admin_email = ADMIN_EMAIL.strip().lower()
 is_admin = (
     bool(user.get("is_admin", 0))
     or (bool(_admin_email) and email.strip().lower() == _admin_email)
