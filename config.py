@@ -33,6 +33,9 @@ APP_VERSION     = "2.0.0"
 APP_TAGLINE     = "Professional Bangla ↔ English translation powered by AI"
 ADMIN_USERNAME  = _get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD  = _get("ADMIN_PASSWORD", "Admin@1234")
+# Your email — anyone who logs in with this email gets admin automatically.
+# Set ADMIN_EMAIL in Streamlit secrets or .env
+ADMIN_EMAIL     = _get("ADMIN_EMAIL", "").strip().lower()
 
 # ── Free tier limits ─────────────────────────────────────────
 FREE_TRANSLATIONS_PER_DAY = 5    # resets at midnight
